@@ -36,3 +36,5 @@ require __DIR__.'/auth.php';
 Route::resource('items', ItemController::class);
 Route::resource('boxes', BoxController::class);
 Route::resource('controllers', LoanController::class);
+Route::resource('loans', LoanController::class);
+
