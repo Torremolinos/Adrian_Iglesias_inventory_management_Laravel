@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             BoxSeeder::class,
             ItemSeeder::class,
             LoanSeeder::class,
+            UserSeeder::class,
         ]);
     }
 }
