@@ -13,7 +13,8 @@ class BoxController extends Controller
      */
     public function index()
     {
-        //
+        $boxes = Box::all();
+        return view('box.index', compact('box'));
     }
 
     /**
@@ -21,7 +22,7 @@ class BoxController extends Controller
      */
     public function create()
     {
-        //
+        return view('box.create');
     }
 
     /**
@@ -29,7 +30,15 @@ class BoxController extends Controller
      */
     public function store(StoreBoxRequest $request)
     {
-        //
+        $validated = $request->validate([
+            'label' => 'required|max:255',
+            'local' => 'required|max:255',
+        ]);
+        
+        Box::create($validated);
+
+        return redirect('boxes')->with('success','Box created successfully');
+        
     }
 
     /**
@@ -45,7 +54,8 @@ class BoxController extends Controller
      */
     public function edit(Box $box)
     {
-        //
+        $box = Box::findOrFail($box);
+        return view('boxes.edit', compact('box'));
     }
 
     /**
@@ -53,7 +63,21 @@ class BoxController extends Controller
      */
     public function update(UpdateBoxRequest $request, Box $box)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|max:255',
+            'description' => 'required|max:255',
+            'price' => 'required|numeric',
+            'picture ' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048|nullable',
+        ]);
+        if ($request->hasFile('picture')) {
+            $path = $request->file('picture')->store('public/pictures');
+            $validated['picture'] = $path;
+
+        }
+        Box::create($validated);
+
+        return redirect('boxes')->with('success','Box created successfully');
+        
     }
 
     /**
@@ -61,6 +85,8 @@ class BoxController extends Controller
      */
     public function destroy(Box $box)
     {
-        //
+        $box = Box::findOrFail($box);
+        $box->delete();
+        return redirect('boxes')->with('success','Box deleted successfully');
     }
 }

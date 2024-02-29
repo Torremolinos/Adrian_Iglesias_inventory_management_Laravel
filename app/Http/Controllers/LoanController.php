@@ -13,7 +13,8 @@ class LoanController extends Controller
      */
     public function index()
     {
-        //
+        $loans = Loan::all();
+        return view('loan.index', compact('loan'));
     }
 
     /**
@@ -21,7 +22,7 @@ class LoanController extends Controller
      */
     public function create()
     {
-        //
+        return view('loan.create');
     }
 
     /**
@@ -29,7 +30,16 @@ class LoanController extends Controller
      */
     public function store(StoreLoanRequest $request)
     {
-        //
+        $validated = $request->validate([
+            'item_id' => 'required|exists:items,id',
+            'borrower_id' => 'required|exists:borrowers,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+        ]);
+        
+        Loan::create($validated);
+
+        return redirect('loan')->with('success', 'Loan created successfully');
     }
 
     /**

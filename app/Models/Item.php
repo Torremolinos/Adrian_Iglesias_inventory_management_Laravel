@@ -12,6 +12,6 @@ class Item extends Model
         return $this->belongsTo(Box::class);
     }
     public function loan(){
-        return $this->belongsTo(Loan::class);
+        return $this->hasMany(Loan::class);
     }
 }
