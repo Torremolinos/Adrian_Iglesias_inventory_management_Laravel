@@ -5,23 +5,28 @@ namespace App\Http\Controllers;
 use App\Models\Loan;
 use App\Http\Requests\StoreLoanRequest;
 use App\Http\Requests\UpdateLoanRequest;
+use Illuminate\View\View;
+
 
 class LoanController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): View
     {
-        //
+        return view('loans.index', [
+            'loan' => Loan::all(),
+        ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        //
+        return view('loan.create');
     }
 
     /**
@@ -29,7 +34,16 @@ class LoanController extends Controller
      */
     public function store(StoreLoanRequest $request)
     {
-        //
+        $validated = $request->validate([
+            'item_id' => 'required|exists:items,id',
+            'borrower_id' => 'required|exists:borrowers,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+        ]);
+        
+        Loan::create($validated);
+
+        return redirect('loan')->with('success', 'Loan created successfully');
     }
 
     /**

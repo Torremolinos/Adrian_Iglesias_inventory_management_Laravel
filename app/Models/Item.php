@@ -8,10 +8,19 @@ use Illuminate\Database\Eloquent\Model;
 class Item extends Model
 {
     use HasFactory;
-    public function box(){
+    protected $fillable = [
+        'name',
+        'description',
+        'picture',
+        'price',
+        'box_id',
+    ];
+    public function box()
+    {
         return $this->belongsTo(Box::class);
     }
-    public function loan(){
-        return $this->belongsTo(Loan::class);
+    public function loan()
+    {
+        return $this->hasMany(Loan::class);
     }
 }
