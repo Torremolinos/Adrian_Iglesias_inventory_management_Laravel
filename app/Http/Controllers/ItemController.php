@@ -44,7 +44,7 @@ class ItemController extends Controller
        
             Item::create($validated);
 
-            return redirect('item')->with('success', 'Item created successfully');
+            return redirect('items.index')->with('success', 'Item created successfully');
         
     }
 
@@ -61,8 +61,7 @@ class ItemController extends Controller
      */
     public function edit(Item $item)
     {
-        $item = Item::findOrFail($item);
-        return view('item.edit', compact('item'));
+        return view('items.edit', compact('item'));
     }
 
     /**
@@ -87,7 +86,6 @@ class ItemController extends Controller
      */
     public function destroy(Item $item)
     {
-        $item = Item::findOrFail($item);
         $item->delete();
         return redirect('items')->with('success','Item deleted successfully');
     }
