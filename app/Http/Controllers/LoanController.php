@@ -5,7 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Loan;
 use App\Http\Requests\StoreLoanRequest;
 use App\Http\Requests\UpdateLoanRequest;
+use App\Models\Item;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
+
 
 
 class LoanController extends Controller
@@ -16,43 +20,60 @@ class LoanController extends Controller
     public function index(): View
     {
         return view('loans.index', [
-            'loan' => Loan::all(),
+            'loans' => Loan::all(),
+            'items' => Item::all(),
+            'users' => User::all(),
         ]);
     }
 
 
     /**
      * Show the form for creating a new resource.
-     */
-    public function create()
+     */ public function create(): View
     {
-        return view('loan.create');
+        $selectedItem = request()->input('item_id');
+
+
+        return view('loans.create', [
+            'items' => Item::all(),
+            'users' => User::all(),
+            'selectedItem' => $selectedItem,
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreLoanRequest $request)
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'item_id' => 'required|exists:items,id',
-            'borrower_id' => 'required|exists:borrowers,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
+            'due_date' => 'required|date',
         ]);
-        
+
+        $validated['user_id'] = auth()->user()->id;
+        $validated['checkout_date'] = now();
+
         Loan::create($validated);
 
-        return redirect('loan')->with('success', 'Loan created successfully');
+        return redirect(route('loans.index'))->with('success', 'Préstamo creado correctamente');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Loan $loan)
+    public function show(Loan $loan): View
     {
-        //
+        $loans = Loan::all(); // or any other logic to get the loans
+    
+        return view('loans.show', [
+            'loan' => $loan,
+            'item' => $loan->item,
+            'user' => $loan->user,
+            'loans' => $loans,
+        ]);
     }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -65,9 +86,10 @@ class LoanController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateLoanRequest $request, Loan $loan)
+    public function update(Request $request, Loan $loan)
     {
-        //
+        $loan->update(['returned_date' => now()]);
+        return redirect(route('loans.index'));
     }
 
     /**
@@ -76,5 +98,12 @@ class LoanController extends Controller
     public function destroy(Loan $loan)
     {
         //
+    }
+    public function return(Loan $loan)
+    {
+        $loan->is_returned = true;
+        $loan->save();
+    
+        return redirect()->route('loans.index');
     }
 }

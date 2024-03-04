@@ -6,7 +6,9 @@ use App\Models\Box;
 use App\Http\Requests\StoreBoxRequest;
 use App\Http\Requests\UpdateBoxRequest;
 use Illuminate\View\View;
-
+use App\Models\Item;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 
 class BoxController extends Controller
@@ -18,6 +20,7 @@ class BoxController extends Controller
     {
         return view('boxes.index', [
             'boxes' => Box::all(),
+            'items' => Item::all(),
         ]);
     }
 
@@ -26,31 +29,38 @@ class BoxController extends Controller
      */
     public function create()
     {
-        return view('box.create');
+        return view('boxes.create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreBoxRequest $request)
+    public function store(Request $request)
     {
-        $validated = $request->validate([
-            'label' => 'required|max:255',
-            'local' => 'required|max:255',
-        ]);
-        
-        Box::create($validated);
+        try {
+            $validated = $request->validate([
+                'label' => 'required|max:255',
+                'location' => 'required|max:255',
+            ]);
 
-        return redirect('boxes')->with('success','Box created successfully');
-        
+            Box::create($validated);
+
+            return redirect()->route('boxes.index')->with('success', 'Box created successfully');
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+        }
     }
+
 
     /**
      * Display the specified resource.
      */
-    public function show(Box $box)
+    public function show(Box $box): View
     {
-        //
+        $box->load('items'); // Cargar la relación 'items' para la caja específica
+        return view('boxes.show', [
+            'box' => $box, // Pasar la instancia de la caja a la vista
+        ]);
     }
 
     /**
@@ -58,30 +68,23 @@ class BoxController extends Controller
      */
     public function edit(Box $box)
     {
-        $box = Box::findOrFail($box);
+
         return view('boxes.edit', compact('box'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateBoxRequest $request, Box $box)
+    public function update(Request $request, Box $box)
     {
         $validated = $request->validate([
-            'name' => 'required|max:255',
-            'description' => 'required|max:255',
-            'price' => 'required|numeric',
-            'picture ' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048|nullable',
+            'label' => 'required|max:255',
+            'location' => 'required|max:255',
         ]);
-        if ($request->hasFile('picture')) {
-            $path = $request->file('picture')->store('public/pictures');
-            $validated['picture'] = $path;
 
-        }
-        Box::create($validated);
+        $box->update($validated);
 
-        return redirect('boxes')->with('success','Box created successfully');
-        
+        return redirect('boxes')->with('success', 'Box updated successfully');
     }
 
     /**
@@ -89,8 +92,9 @@ class BoxController extends Controller
      */
     public function destroy(Box $box)
     {
-        $box = Box::findOrFail($box);
+        $box->items()->update(['box_id' => null]);
         $box->delete();
-        return redirect('boxes')->with('success','Box deleted successfully');
+
+        return redirect('boxes')->with('success', 'Box deleted successfully');
     }
 }

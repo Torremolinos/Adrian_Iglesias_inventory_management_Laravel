@@ -7,7 +7,9 @@ use App\Http\Requests\StoreItemRequest;
 use App\Http\Requests\UpdateItemRequest;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-
+use App\Models\Box;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\RedirectResponse;
 
 class ItemController extends Controller
 {
@@ -16,8 +18,12 @@ class ItemController extends Controller
      */
     public function index(): View
     {
+
         return view('items.index', [
-            'items' => Item::all(),
+            'items' => Item::latest()->get(),
+            
+            // 'items' => Item::latest()->paginate(5),  esto en el index  <!-- {{ $items->links('pagination::tailwind') }} -->
+
         ]);
     }
 
@@ -26,26 +32,34 @@ class ItemController extends Controller
      */
     public function create()
     {
-        return view('items.create');
+        return view(
+            'items.create',
+            ['boxes' => Box::all()]
+        );
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreItemRequest $request)
+    public function store(Request $request)
     {
+        // dd($request->all()); esto me permite ver el array que se envia.
         $validated = $request->validate([
             'name' => 'required|max:255',
-            'description' => 'required|max:255',
-            'price' => 'required|numeric',
+            'description' => 'nullable|max:255',
+            'price' => 'nullable|numeric',
             'box_id' => 'nullable|exists:boxes,id',
-            'picture ' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048|nullable',
+            'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048|nullable',
         ]);
-       
-            Item::create($validated);
 
-            return redirect('items.index')->with('success', 'Item created successfully');
-        
+
+        if ($request->hasFile('picture')) {
+            $validated['picture'] = $request->file('picture')->store('public/photos');
+        }
+
+        Item::create($validated);
+
+        return redirect('items')->with('success', 'Item created successfully');
     }
 
     /**
@@ -53,21 +67,30 @@ class ItemController extends Controller
      */
     public function show(Item $item)
     {
-        //
+        return view('items.show', [
+            'item' => $item,
+            'boxes' => Box::all()
+        ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Item $item)
+    public function edit(Item $item): View
     {
-        return view('items.edit', compact('item'));
+        return view(
+            'items.edit',
+            [
+                'item' => $item,
+                'boxes' => Box::all()
+            ]
+        );
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateItemRequest $request, Item $item)
+    public function update(Request $request, Item $item)
     {
         $validated = $request->validate([
             'name' => 'required|max:255',
@@ -76,17 +99,32 @@ class ItemController extends Controller
             'box_id' => 'nullable|exists:boxes,id',
             'picture ' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048|nullable',
         ]);
-       
-            Item::create($validated);
 
-            return redirect('item')->with('success', 'Item created successfully');
+
+        if ($request->hasFile('picture')) {
+            $validated['picture'] = $request->file('picture')->store('public/photos');
+
+            if ($item->picture) {
+                Storage::delete($item->picture);
+            }
+        }
+
+        $item->update($validated);
+
+        return redirect('items');
     }
+
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Item $item)
     {
+        if ($item->picture) {
+            Storage::delete($item->picture);
+        }
+
         $item->delete();
-        return redirect('items')->with('success','Item deleted successfully');
+
+        return redirect('items')->with('success', 'Item deleted successfully');
     }
 }

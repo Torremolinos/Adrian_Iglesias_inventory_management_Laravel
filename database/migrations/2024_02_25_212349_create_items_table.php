@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('picture')->nullable();
             $table->decimal('price', 8, 2)->nullable();
-            $table->unsignedBigInteger('box_id');
+            $table->unsignedBigInteger('box_id')->nullable();
             $table->foreign('box_id')->references('id')->on('boxes')->onDelete('cascade');
             $table->timestamps();
         });
