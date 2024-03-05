@@ -47,7 +47,7 @@
                                     <div class="flex justify-center h-20 w-20">{{$item->name}}</div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="flex justify-center h-20 w-20">
+                                    <div class="flex justify-center h-20 w-18">
                                         @isset($item->box)
                                         {{$item->box->label}}
                                         @else
@@ -56,12 +56,9 @@
                                     </div>
                                 </td>
                                 <td class="flex py-4 space-x-10 sm:-my-px sm:ms-10">
-                                    @if ($item->box)
+                                  
                                     <a href="{{ route('items.show', $item->id) }}" class=" text-blue-800 font-bold">Ver</a>
-                                    @else
-                                    <span class="text-gray-400">
-                                        No disponible</span>
-                                    @endif
+                                  
                                     <a href="{{ route('items.edit', $item->id) }}" class=" text-blue-800 font-bold">Editar</a>
                                     <form action="{{ route('items.destroy', $item->id) }}" method="post">
                                         @csrf

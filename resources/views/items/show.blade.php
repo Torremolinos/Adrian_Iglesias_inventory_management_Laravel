@@ -30,24 +30,28 @@
                             </div>
                             <div class="mb-4">
                                 <label for="box_id" class="block text-gray-700 text-sm font-bold mb-2">Box</label>
+                                @if ($item->box)
                                 <div class="">{{$item->box->label}}</div>
+                                @else
+                                <div class="">Sin caja seleccionada</div>
+                                @endif
                             </div>
                             <div class="mb-4">
                                 <label for="picture" class="block text-gray-700 text-sm font-bold mb-2">Photo</label>
                                 @if ($item->picture)
-                                        <img src="{{ asset(Storage::url($item->picture)) }}" alt="{{ $item->name }}" class="h-20 w-20">
-                                        @else
-                                        <img src="https://via.placeholder.com/150" alt="{{ $item->name }}" class="h-20 w-20">
-                                        @endif
+                                <img src="{{ asset(Storage::url($item->picture)) }}" alt="{{ $item->name }}" class="h-20 w-20">
+                                @else
+                                <img src="https://via.placeholder.com/150" alt="{{ $item->name }}" class="h-20 w-20">
+                                @endif
                             </div>
                             <a href="{{ route('items.edit', $item->id) }}" class=" text-blue-800 font-bold">Editar</a>
-                                    <form action="{{ route('items.destroy', $item->id) }}" method="post">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class=" text-red-800 font-bold">Delete</button>
-                                    </form>
+                            <form action="{{ route('items.destroy', $item->id) }}" method="post">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class=" text-red-800 font-bold">Delete</button>
+                            </form>
                             <div class="flex justify-between">
-                                <a href="{{ route('items.index') }}" class="text-blue-500 hover:underline">Volver a la lista</a>
+                            <a href="{{ url()->previous() }}" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-black uppercase tracking-widest hover:bg-gray-400 active:bg-gray-500 focus:outline-none focus:border-gray-500 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">Volver atrás</a>
                             </div>
                         </form>
                     </div>
